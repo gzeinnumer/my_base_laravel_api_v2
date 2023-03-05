@@ -15,7 +15,7 @@ class UserController extends BaseController
         try {
             $result = User::find($id);
 
-            $ar = $this->getApiRespsonse(1);
+            $ar = $this->getApiResponse(1);
 
             return $this->initResponse(1, $ar->title, $ar->message, $result == null ? 0 : 1, null, null, null, null, $result, []);
         } catch (\Throwable $th) {
@@ -96,11 +96,14 @@ class UserController extends BaseController
 
             DB::commit();
 
-            $apiResponse = $this->getApiResponse(1);
-            return $this->responseSuccess($apiResponse);
+            $ar = $this->getApiResponse(1);
+
+            return $this->initResponse(1,  $ar->title, $ar->message, null, null, null, null, null, null, []);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return $this->responseError($th);
+
+            $ar = $this->getApiResponse(-1);
+            return $this->initResponse(-1, $ar->title, $th->getMessage(), null, null, null, null, null, null, []);
         }
     }
 
@@ -135,11 +138,14 @@ class UserController extends BaseController
 
             DB::commit();
 
-            $apiResponse = $this->getApiResponse(1);
-            return $this->responseSuccess($apiResponse);
+            $ar = $this->getApiResponse(1);
+
+            return $this->initResponse(1,  $ar->title, $ar->message, null, null, null, null, null, null, []);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return $this->responseError($th);
+
+            $ar = $this->getApiResponse(-1);
+            return $this->initResponse(-1, $ar->title, $th->getMessage(), null, null, null, null, null, null, []);
         }
     }
 
@@ -155,10 +161,14 @@ class UserController extends BaseController
 
             DB::commit();
 
-            $apiResponse = $this->getApiResponse(1);
-            return $this->responseSuccess($apiResponse);
+            $ar = $this->getApiResponse(1);
+
+            return $this->initResponse(1,  $ar->title, $ar->message, null, null, null, null, null, null, []);
         } catch (\Throwable $th) {
-            return $this->responseError($th);
+            DB::rollBack();
+
+            $ar = $this->getApiResponse(-1);
+            return $this->initResponse(-1, $ar->title, $th->getMessage(), null, null, null, null, null, null, []);
         }
     }
 }
