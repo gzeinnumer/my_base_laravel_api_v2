@@ -2,67 +2,77 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
 use stdClass;
 
-class BaseController extends BaseControllerSetting
+class BaseController extends Controller
 {
-    protected function initParams($total, $perPage) {
-        $totalPage = $total/$perPage;
-        $isMore = $totalPage > (int) $totalPage;
-        return (int) $totalPage + ($isMore?1:0);
+    public function getApiResponse($code)
+    {
+        $apiResponse = new stdClass();
+        $apiResponse->title = "Perhatian";
+        // $apiResponse->message = "pesan";
+        if ($code == 1) {
+            $apiResponse->message = "Success";
+        } else if ($code == 0) {
+            $apiResponse->message = "Failed";
+        } else if ($code == -1) {
+            $apiResponse->message = "Error";
+        }
+
+        return $apiResponse;
     }
 
-    public function generateInfoList($data) {
-        $info = new stdClass();
-        $info->total = count($data) != null ? count($data) : null;
-        // $info->totalPage = null;
-        // $info->page = null;
-        // $info->next = null;
-        // $info->prev = null;
-
-        return $info;
+    public function initResponse($status, $title, $message, $total, $totalPage, $page, $next, $prev, $data, $datas)
+    {
+        // $apiRespoonse = $this->getApiResponse($code);
+        $res = new stdClass;
+        $res->status = $status;
+        $res->title = $title;
+        $res->message = $message;
+        $info = new stdClass;
+        $info->total = $total;
+        $info->totalPage = $totalPage;
+        $info->page = $page;
+        $info->next = $next;
+        $info->prev = $prev;
+        $res->info = $info;
+        $res->data = $data;
+        $res->datas = $datas;
+        return $res;
     }
 
-    public function generateInfoPagination($dataParsing, $limit, $page) {
-        $count = $dataParsing->paginate()->total();
-        $totalPage = $this->initParams($count, $limit);
-        $next = $page+1;
-        $prev = $page-1;
-        
+    public function generateInfoPagination($dataParsing, $limit, $page)
+    {
+        $total = $dataParsing->paginate()->total();
+        $totalPage = $this->initParams($total, $limit);
+        $next = $page + 1;
+        $prev = $page - 1;
+
         $info = new stdClass();
-        $info->total = $count;
+        $info->total = $total;
         $info->totalPage = $totalPage;
         $info->page = (int) $page;
 
-        if($page>$totalPage || $page <= 0){
+        if (
+            $page > $totalPage || $page <= 0
+        ) {
             $info->next = null;
             $info->prev = null;
 
             return $info;
-        } else{
-            $info->next = $page == $totalPage ? null: $next;
+        } else {
+            $info->next = $page == $totalPage ? null : $next;
             $info->prev = $prev == 0 ? null : $prev;
-            
+
             return $info;
         }
     }
 
-    public function toPaging($codeSuccess, $dataParsing, $limit, $page) {
-        $result = $dataParsing->paginate($limit, ['*'], 'page', $page)->items();
-
-        $info = $this->generateInfoPagination($dataParsing, $limit, $page);
-
-        return $this->finalResultPaging($codeSuccess, $result, $info);
-    }
-
-    public function toList($result, $codeSuccess, $codeFailed) {
-        $info = $this->generateInfoList($result);
-
-        return $this->finalResultList($info->total > 0, $codeSuccess, $codeFailed, $result, $info);
-    }
-
-    public function toObject($result, $codeSuccess, $codeFailed) {
-        return $this->finalResultSingle($result != null ? 1 : 0, $codeSuccess, $codeFailed, $result);
+    protected function initParams($total, $limit)
+    {
+        $totalPage = $total / $limit;
+        $isMore = $totalPage > (int) $totalPage;
+        return (int) $totalPage + ($isMore ? 1 : 0);
     }
 }
- 
